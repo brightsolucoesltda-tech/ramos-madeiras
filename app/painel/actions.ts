@@ -396,15 +396,19 @@ export async function clienteAceitouProposta(id: number): Promise<Resp<{ data?: 
 
 /* ===================== FASE 3: ROTAS ===================== */
 
-/** Salva a ordem das entregas do dia (depois de reordenar na mão). */
-export async function salvarOrdemRota(ids: number[]): Promise<Resp> {
+/** Só o patrão (administrador) e o marceneiro mexem na rota. */
+const PODE_EDITAR_ROTA: Papel[] = ["admin", "marceneiro"];
+
+/** Salva a ordem das entregas do dia (edição na mão). Editar desfaz a aprovação: precisa aprovar de novo. */
+export async function salvarOrdemRota(dia: string, ids: number[]): Promise<Resp> {
   try {
-    await exigirAcao(["admin", "marceneiro", "vendedor"]);
+    await exigirAcao(PODE_EDITAR_ROTA);
     const db = admin();
     for (const [i, id] of ids.entries()) {
       const { error } = await db.from("pedidos").update({ ordem_rota: i + 1 }).eq("id", id);
       if (error) throw error;
     }
+    await db.from("rotas_dia").delete().eq("data", dia);
     atualizarTela();
     return { ok: true };
   } catch (e) {
@@ -412,11 +416,31 @@ export async function salvarOrdemRota(ids: number[]): Promise<Resp> {
   }
 }
 
-/** Volta para a ordem sugerida automaticamente (pela proximidade). */
-export async function limparOrdemRota(ids: number[]): Promise<Resp> {
+/** Volta para a ordem sugerida automaticamente (pela proximidade). Também desfaz a aprovação. */
+export async function limparOrdemRota(dia: string, ids: number[]): Promise<Resp> {
   try {
-    await exigirAcao(["admin", "marceneiro", "vendedor"]);
-    const { error } = await admin().from("pedidos").update({ ordem_rota: null }).in("id", ids);
+    await exigirAcao(PODE_EDITAR_ROTA);
+    const db = admin();
+    const { error } = await db.from("pedidos").update({ ordem_rota: null }).in("id", ids);
+    if (error) throw error;
+    await db.from("rotas_dia").delete().eq("data", dia);
+    atualizarTela();
+    return { ok: true };
+  } catch (e) {
+    return falha(e);
+  }
+}
+
+/** Patrão APROVA a rota do dia como está na tela: a ordem fica gravada e vale para todos. */
+export async function aprovarRota(dia: string, ids: number[]): Promise<Resp> {
+  try {
+    const u = await exigirAcao(PODE_EDITAR_ROTA);
+    const db = admin();
+    for (const [i, id] of ids.entries()) {
+      const { error } = await db.from("pedidos").update({ ordem_rota: i + 1 }).eq("id", id);
+      if (error) throw error;
+    }
+    const { error } = await db.from("rotas_dia").upsert({ data: dia, aprovada_por: u.id, aprovada_em: new Date().toISOString() });
     if (error) throw error;
     atualizarTela();
     return { ok: true };

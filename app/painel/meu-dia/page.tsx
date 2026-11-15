@@ -16,7 +16,7 @@ export default async function MeuDia({ searchParams }: { searchParams: Promise<{
   const cfg = await carregarConfig();
   const db = admin();
 
-  const [{ data: pedidos }, { data: bairros }, { count: aguardandoAceite }] = await Promise.all([
+  const [{ data: pedidos }, { data: bairros }, { count: aguardandoAceite }, { data: aprovacao }] = await Promise.all([
     db
       .from("pedidos")
       .select("id,numero,status,cliente_nome,telefone,endereco,bairro,cidade,referencia,bancos,itens,lat,lng,ordem_rota,avisos")
@@ -24,6 +24,7 @@ export default async function MeuDia({ searchParams }: { searchParams: Promise<{
       .neq("status", "cancelado"),
     db.from("bairros").select("nome,cidade,lat,lng"),
     db.from("pedidos").select("id", { count: "exact", head: true }).eq("aceite", "pendente").in("status", ["novo", "confirmado", "reagendado"]),
+    db.from("rotas_dia").select("aprovada_em, perfis(nome)").eq("data", dia).maybeSingle(),
   ]);
 
   const paradas: Parada[] = (pedidos ?? []).map((p) => ({
@@ -33,6 +34,11 @@ export default async function MeuDia({ searchParams }: { searchParams: Promise<{
   }));
   const { lista, manual } = ordenar(paradas, cfg.base, (bairros ?? []) as Bairro[]);
   const totalBancos = lista.reduce((s, p) => s + p.bancos, 0);
+  // A aprovação só vale se nenhuma entrega nova entrou no dia depois dela (toda entrega tem posição gravada)
+  const aprovada = aprovacao && manual
+    ? { em: aprovacao.aprovada_em as string, por: ((aprovacao.perfis as unknown as { nome: string } | null)?.nome) ?? "" }
+    : null;
+  const mudouDepois = !!aprovacao && !manual;
   const horas = (b: number) => `${(b * cfg.horasPorBanco).toString().replace(".", ",")}h`;
   const link = (d: string) => `/painel/meu-dia?dia=${d}`;
 
@@ -64,6 +70,10 @@ export default async function MeuDia({ searchParams }: { searchParams: Promise<{
           base={cfg.base}
           mensagens={cfg.mensagens}
           papel={u.papel}
+          dia={dia}
+          aprovada={aprovada}
+          mudouDepois={mudouDepois}
+          podeEditar={u.papel !== "vendedor"}
         />
       )}
     </>

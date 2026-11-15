@@ -144,3 +144,12 @@ insert into public.bairros (nome, cidade, lat, lng) values
  ('Ganchinho','Curitiba',-25.5610,-49.2620),('Campo de Santana','Curitiba',-25.5900,-49.3300),
  ('Caximba','Curitiba',-25.6050,-49.3350)
 on conflict do nothing;
+
+-- Aprovação da rota do dia pelo patrão (administrador/marceneiro)
+create table if not exists public.rotas_dia (
+  data date primary key,
+  aprovada_por uuid references public.perfis(id) on delete set null,
+  aprovada_em timestamptz not null default now()
+);
+alter table public.rotas_dia enable row level security;
+grant all on public.rotas_dia to service_role;
