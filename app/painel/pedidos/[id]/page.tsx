@@ -58,6 +58,7 @@ export default async function Pedido({ params, searchParams }: { params: Promise
         <dt>Pagamento</dt><dd>{p.forma_pagamento ?? "Na entrega"}</dd>
         <dt>Data desejada</dt><dd>{dataBR(p.data_desejada)}</dd>
         <dt>Agendado</dt><dd>{dataBR(p.data_agendada)}</dd>
+        <dt>Aceite</dt><dd>{{ pendente: "⏳ Esperando o marceneiro", aceito: "✅ Aceito pelo marceneiro", proposto: `📅 Proposto ${dataBR(p.data_proposta)} (falta o cliente)`, recusado: "❌ Recusado pelo marceneiro" }[p.aceite as string] ?? "—"}</dd>
         <dt>Origem</dt><dd>{p.canal === "site" ? "Site" : p.canal === "exemplo" ? "Exemplo" : "Cadastro manual"}{p.origem ? ` · ${p.origem}` : ""}</dd>
         <dt>Vendedor</dt><dd>{vendedor?.nome ?? "—"}</dd>
         {p.observacoes && (<><dt>Obs.</dt><dd>{p.observacoes}</dd></>)}
@@ -66,6 +67,7 @@ export default async function Pedido({ params, searchParams }: { params: Promise
       <AcoesPedido
         id={p.id} numero={p.numero} status={p.status as Status} nome={p.cliente_nome} telefone={p.telefone} bancos={p.bancos}
         dataAgendada={p.data_agendada} dataDesejada={p.data_desejada} papel={u.papel} mensagens={cfg.mensagens}
+        aceite={p.aceite} dataProposta={p.data_proposta}
       />
     </>
   );

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { usuarioAtual } from "@/lib/auth";
+import { admin } from "@/lib/supabase/admin";
 import { supabaseServidor } from "@/lib/supabase/server";
 import Nav from "./Nav";
 import "./painel.css";
@@ -13,6 +14,12 @@ export default async function PainelLayout({ children }: { children: React.React
   const u = await usuarioAtual();
   // Sem perfil: mostra só o conteúdo (tela de login).
   if (!u) return <>{children}</>;
+
+  const { count: aceitePendente } = await admin()
+    .from("pedidos")
+    .select("id", { count: "exact", head: true })
+    .eq("aceite", "pendente")
+    .in("status", ["novo", "confirmado", "reagendado"]);
 
   async function sair() {
     "use server";
@@ -31,7 +38,7 @@ export default async function PainelLayout({ children }: { children: React.React
         <form action={sair}><button type="submit">Sair</button></form>
       </header>
       <main className="p-main">{children}</main>
-      <Nav papel={u.papel} />
+      <Nav papel={u.papel} aceitePendente={aceitePendente ?? 0} />
     </div>
   );
 }

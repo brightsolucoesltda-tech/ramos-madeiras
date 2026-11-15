@@ -14,6 +14,8 @@ export interface ConfigGeral {
   promo: { ativa: boolean; texto: string };
   metaPixelId: string;
   mensagens: Record<string, string>;
+  /** Ponto de saída das entregas (a marcenaria): ordena as rotas e monta o link do Google Maps. */
+  base: { endereco: string; lat: number; lng: number };
 }
 
 export const configPadrao: ConfigGeral = {
@@ -27,6 +29,7 @@ export const configPadrao: ConfigGeral = {
   diasParaFrente: config.agenda.diasParaFrente,
   promo: config.promo,
   metaPixelId: config.metaPixelId,
+  base: { endereco: "Curitiba - PR", lat: -25.4284, lng: -49.2733 },
   mensagens: {
     em_producao: "Olá, {nome}! Seu banco-mesa (pedido nº {numero}) já está em produção. Assim que ficar pronto a gente avisa!",
     confirmado: "Olá, {nome}! Seu pedido nº {numero} está confirmado para {data}. Qualquer dúvida é só chamar. Ramos Madeiras",
@@ -41,7 +44,7 @@ export async function carregarConfig(): Promise<ConfigGeral> {
     const { data } = await admin().from("configuracoes").select("valor").eq("chave", "geral").maybeSingle();
     const v = (data?.valor ?? {}) as Partial<ConfigGeral>;
     // textos novos do padrão continuam aparecendo mesmo se o banco tiver uma versão antiga
-    return { ...configPadrao, ...v, mensagens: { ...configPadrao.mensagens, ...(v.mensagens ?? {}) } };
+    return { ...configPadrao, ...v, mensagens: { ...configPadrao.mensagens, ...(v.mensagens ?? {}) }, base: { ...configPadrao.base, ...(v.base ?? {}) } };
   } catch {
     return configPadrao;
   }

@@ -4,7 +4,8 @@ import { revalidatePath } from "next/cache";
 import { agendaDoPeriodo, proximoDiaComVaga } from "@/lib/agenda";
 import { exigirAcao, type Papel } from "@/lib/auth";
 import { carregarConfig, type ConfigGeral } from "@/lib/configDb";
-import { hojeBR, somarDias } from "@/lib/datas";
+import { dataBR, hojeBR, somarDias } from "@/lib/datas";
+import { buscarCoordenadas } from "@/lib/geo";
 import { STATUS, STATUS_MARCENEIRO, type Status } from "@/lib/status";
 import { admin } from "@/lib/supabase/admin";
 
@@ -60,14 +61,24 @@ export async function salvarPedido(f: PedidoForm): Promise<Resp<{ id: number }>>
       atualizado_em: new Date().toISOString(),
     };
     const db = admin();
+    // Coordenadas do endereço (para a rota). Só consulta quando o endereço é novo ou mudou.
+    const enderecoCompleto = [dados.endereco, dados.bairro, dados.cidade].filter(Boolean).join(", ");
+    let coords: { lat: number | null; lng: number | null } | undefined;
+    if (!dados.endereco) coords = { lat: null, lng: null };
+    else {
+      const antigo = f.id ? (await db.from("pedidos").select("endereco,bairro,cidade,lat").eq("id", f.id).single()).data : null;
+      const mudou = !antigo || antigo.lat == null || [antigo.endereco, antigo.bairro, antigo.cidade].filter(Boolean).join(", ") !== enderecoCompleto;
+      if (mudou) coords = (await buscarCoordenadas(enderecoCompleto)) ?? { lat: null, lng: null };
+    }
+    const dadosFinais = coords ? { ...dados, ...coords } : dados;
     if (f.id) {
-      const { error } = await db.from("pedidos").update(dados).eq("id", f.id);
+      const { error } = await db.from("pedidos").update(dadosFinais).eq("id", f.id);
       if (error) throw error;
       atualizarTela();
       return { ok: true, id: f.id };
     }
     const provisorio = `T${Date.now()}${Math.floor(Math.random() * 1000)}`;
-    const { data, error } = await db.from("pedidos").insert({ ...dados, numero: provisorio, canal: "manual", status: "novo" }).select("id").single();
+    const { data, error } = await db.from("pedidos").insert({ ...dadosFinais, numero: provisorio, canal: "manual", status: "novo" }).select("id").single();
     if (error || !data) throw error ?? new Error("Não foi possível salvar.");
     await db.from("pedidos").update({ numero: String(1000 + data.id) }).eq("id", data.id);
     atualizarTela();
@@ -92,31 +103,38 @@ export async function mudarStatus(id: number, status: Status): Promise<Resp> {
   }
 }
 
+/** Confere se cabe no dia. Devolve um texto de aviso (bloqueado, sem produção ou acima da capacidade) ou "" se couber. */
+async function avisoCapacidade(id: number, data: string): Promise<string> {
+  const db = admin();
+  const cfg = await carregarConfig();
+  const { data: este } = await db.from("pedidos").select("bancos,data_agendada,data_desejada").eq("id", id).single();
+  const bancos = este?.bancos ?? 1;
+  const [dia] = await agendaDoPeriodo(cfg, data, data);
+  // Ocupação do dia sem contar este próprio pedido
+  const jaContado = (este?.data_agendada ?? este?.data_desejada) === data ? bancos : 0;
+  const usados = dia.usados - jaContado;
+  if (dia.bloqueado) return `Esse dia está bloqueado${dia.motivo ? ` (${dia.motivo})` : ""}.`;
+  if (dia.semProducao) return "Esse dia da semana não tem produção.";
+  if (usados + bancos > dia.capacidade) return `Passa da capacidade: ficaria ${usados + bancos}/${dia.capacidade} bancos (encaixe / hora extra).`;
+  return "";
+}
+
 /**
  * Agenda o pedido em um dia. Se passar da capacidade (ou o dia estiver bloqueado), devolve um AVISO
  * e só grava se o usuário confirmar (forcar = true): é o "encaixe/hora extra".
+ * Se o VENDEDOR muda a data, o pedido volta para o aceite do marceneiro.
  */
 export async function agendarPedido(id: number, data: string | null, forcar = false): Promise<Resp<{ aviso?: string }>> {
   try {
-    await exigirAcao(["admin", "vendedor", "marceneiro"]);
-    const db = admin();
-    if (data) {
-      const cfg = await carregarConfig();
-      const { data: ped } = await db.from("pedidos").select("bancos").eq("id", id).single();
-      const bancos = ped?.bancos ?? 1;
-      const [dia] = await agendaDoPeriodo(cfg, data, data);
-      // Ocupação do dia sem contar este próprio pedido
-      const { data: este } = await db.from("pedidos").select("data_agendada,data_desejada").eq("id", id).single();
-      const jaContado = (este?.data_agendada ?? este?.data_desejada) === data ? bancos : 0;
-      const usados = dia.usados - jaContado;
-      let aviso = "";
-      if (dia.bloqueado) aviso = `Esse dia está bloqueado${dia.motivo ? ` (${dia.motivo})` : ""}.`;
-      else if (dia.semProducao) aviso = "Esse dia da semana não tem produção.";
-      else if (usados + bancos > dia.capacidade)
-        aviso = `Passa da capacidade: ficaria ${usados + bancos}/${dia.capacidade} bancos (encaixe / hora extra).`;
-      if (aviso && !forcar) return { ok: true, aviso };
+    const u = await exigirAcao(["admin", "vendedor", "marceneiro"]);
+    if (data && !forcar) {
+      const aviso = await avisoCapacidade(id, data);
+      if (aviso) return { ok: true, aviso };
     }
-    const { error } = await db.from("pedidos").update({ data_agendada: data, atualizado_em: new Date().toISOString() }).eq("id", id);
+    const { error } = await admin()
+      .from("pedidos")
+      .update({ data_agendada: data, aceite: u.papel === "vendedor" ? "pendente" : "aceito", ordem_rota: null, atualizado_em: new Date().toISOString() })
+      .eq("id", id);
     if (error) throw error;
     atualizarTela();
     return { ok: true };
@@ -243,6 +261,7 @@ export async function criarExemplos(): Promise<Resp<{ criados: number }>> {
         data_desejada: somarDias(hoje, dia),
         data_agendada: status === "novo" ? null : somarDias(hoje, dia),
         observacoes: "EXEMPLO — pode apagar",
+        aceite: status === "novo" ? "pendente" : "aceito",
         canal: "exemplo",
         origem: i % 2 ? "facebook" : "instagram",
         vendedor_id: u.id,
@@ -300,4 +319,115 @@ export async function avisoEnviado(id: number, tipo: string, novoStatus?: Status
   } catch (e) {
     return falha(e);
   }
+}
+
+/* ===================== FASE 3: ACEITE DO MARCENEIRO ===================== */
+
+/** Marceneiro ACEITA a data pedida (agendada ou desejada). Avisa se passar da capacidade. */
+export async function aceitarData(id: number, forcar = false): Promise<Resp<{ aviso?: string; data?: string }>> {
+  try {
+    await exigirAcao(["admin", "marceneiro"]);
+    const db = admin();
+    const { data: p } = await db.from("pedidos").select("status,data_agendada,data_desejada").eq("id", id).single();
+    const data = p?.data_agendada ?? p?.data_desejada;
+    if (!data) return { ok: false, erro: "Esse pedido não tem data. Use 'Propor outra data'." };
+    if (!forcar) {
+      const aviso = await avisoCapacidade(id, data);
+      if (aviso) return { ok: true, aviso };
+    }
+    const status = p && ["novo", "reagendado"].includes(p.status) ? "confirmado" : p?.status;
+    const { error } = await db.from("pedidos").update({ data_agendada: data, aceite: "aceito", status, atualizado_em: new Date().toISOString() }).eq("id", id);
+    if (error) throw error;
+    atualizarTela();
+    return { ok: true, data };
+  } catch (e) {
+    return falha(e);
+  }
+}
+
+/** Marceneiro PROPÕE outra data (o cliente ainda precisa concordar). */
+export async function proporOutraData(id: number, data: string): Promise<Resp> {
+  try {
+    await exigirAcao(["admin", "marceneiro"]);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(data)) return { ok: false, erro: "Escolha uma data." };
+    const { error } = await admin()
+      .from("pedidos")
+      .update({ data_proposta: data, aceite: "proposto", status: "reagendado", atualizado_em: new Date().toISOString() })
+      .eq("id", id);
+    if (error) throw error;
+    atualizarTela();
+    return { ok: true };
+  } catch (e) {
+    return falha(e);
+  }
+}
+
+/** Marceneiro RECUSA a data. O vendedor vê o aviso e combina outra com o cliente. */
+export async function recusarData(id: number): Promise<Resp> {
+  try {
+    await exigirAcao(["admin", "marceneiro"]);
+    const { error } = await admin().from("pedidos").update({ aceite: "recusado", atualizado_em: new Date().toISOString() }).eq("id", id);
+    if (error) throw error;
+    atualizarTela();
+    return { ok: true };
+  } catch (e) {
+    return falha(e);
+  }
+}
+
+/** Cliente concordou com a data proposta: vira a data agendada e o pedido fica confirmado. */
+export async function clienteAceitouProposta(id: number): Promise<Resp<{ data?: string }>> {
+  try {
+    await exigirAcao();
+    const db = admin();
+    const { data: p } = await db.from("pedidos").select("data_proposta").eq("id", id).single();
+    if (!p?.data_proposta) return { ok: false, erro: "Não há data proposta." };
+    const { error } = await db
+      .from("pedidos")
+      .update({ data_agendada: p.data_proposta, aceite: "aceito", status: "confirmado", ordem_rota: null, atualizado_em: new Date().toISOString() })
+      .eq("id", id);
+    if (error) throw error;
+    atualizarTela();
+    return { ok: true, data: dataBR(p.data_proposta) };
+  } catch (e) {
+    return falha(e);
+  }
+}
+
+/* ===================== FASE 3: ROTAS ===================== */
+
+/** Salva a ordem das entregas do dia (depois de reordenar na mão). */
+export async function salvarOrdemRota(ids: number[]): Promise<Resp> {
+  try {
+    await exigirAcao(["admin", "marceneiro", "vendedor"]);
+    const db = admin();
+    for (const [i, id] of ids.entries()) {
+      const { error } = await db.from("pedidos").update({ ordem_rota: i + 1 }).eq("id", id);
+      if (error) throw error;
+    }
+    atualizarTela();
+    return { ok: true };
+  } catch (e) {
+    return falha(e);
+  }
+}
+
+/** Volta para a ordem sugerida automaticamente (pela proximidade). */
+export async function limparOrdemRota(ids: number[]): Promise<Resp> {
+  try {
+    await exigirAcao(["admin", "marceneiro", "vendedor"]);
+    const { error } = await admin().from("pedidos").update({ ordem_rota: null }).in("id", ids);
+    if (error) throw error;
+    atualizarTela();
+    return { ok: true };
+  } catch (e) {
+    return falha(e);
+  }
+}
+
+/** Busca as coordenadas de um endereço (usado na config para o ponto de saída). */
+export async function coordenadasDoEndereco(endereco: string): Promise<Resp<{ lat?: number; lng?: number }>> {
+  await exigirAcao(["admin"]);
+  const c = await buscarCoordenadas(endereco);
+  return c ? { ok: true, ...c } : { ok: false, erro: "Não encontrei esse endereço. Tente com rua, número, bairro e cidade." };
 }

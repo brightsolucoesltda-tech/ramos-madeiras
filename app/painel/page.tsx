@@ -25,11 +25,15 @@ export default async function Pedidos({ searchParams }: { searchParams: Promise<
   const [{ data: pedidos }, { data: vendedores }] = await Promise.all([q, db.from("perfis").select("id,nome").in("papel", ["vendedor", "admin"])]);
   const nomeVend = new Map((vendedores ?? []).map((v) => [v.id, v.nome]));
   const aguardando = (pedidos ?? []).filter((p) => p.status === "novo").length;
+  const semAceite = (pedidos ?? []).filter((p) => p.aceite === "pendente" && ["novo", "confirmado", "reagendado"].includes(p.status)).length;
+  const recusados = (pedidos ?? []).filter((p) => p.aceite === "recusado").length;
 
   return (
     <>
       <h1>Pedidos</h1>
       {aguardando > 0 && !f.status && <p className="p-aviso">🔔 {aguardando} pedido(s) novo(s) aguardando confirmação</p>}
+      {semAceite > 0 && !f.status && <Link href="/painel/aceite" className="p-aviso" style={{ textDecoration: "none" }}>⏳ {semAceite} pedido(s) esperando o marceneiro aceitar a data → ver</Link>}
+      {recusados > 0 && !f.status && <Link href="/painel/aceite" className="p-erro" style={{ textDecoration: "none" }}>❌ {recusados} data(s) recusada(s) pelo marceneiro — combine outra com o cliente</Link>}
 
       <details className="p-card p-filtros">
         <summary>Filtrar</summary>
@@ -73,6 +77,9 @@ export default async function Pedidos({ searchParams }: { searchParams: Promise<
               {p.bairro ?? "—"}{p.cidade ? ` · ${p.cidade}` : ""} · {brl(Number(p.valor_total))}
               {p.data_agendada ? ` · agendado ${dataBR(p.data_agendada)}` : p.data_desejada ? ` · desejado ${dataBR(p.data_desejada)}` : " · sem data"}
             </small>
+            {p.aceite === "pendente" && ["novo", "confirmado", "reagendado"].includes(p.status) && <small>⏳ Esperando aceite do marceneiro</small>}
+            {p.aceite === "proposto" && <small>📅 Marceneiro propôs {dataBR(p.data_proposta)} — falta o cliente confirmar</small>}
+            {p.aceite === "recusado" && <small style={{ color: "#b3261e" }}>❌ Data recusada pelo marceneiro</small>}
             <small>{p.canal === "site" ? "🌐 Site" : p.canal === "exemplo" ? "🧪 Exemplo" : `🧑 ${nomeVend.get(p.vendedor_id) ?? "Manual"}`}{p.origem ? ` · ${p.origem}` : ""}</small>
           </Link>
         ))}

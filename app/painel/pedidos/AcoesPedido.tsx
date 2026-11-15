@@ -6,7 +6,7 @@ import type { Papel } from "@/lib/auth";
 import { dataBR } from "@/lib/datas";
 import { linkWhatsApp } from "@/lib/pedido";
 import { preencher, proximoStatus, ROTULO, STATUS, STATUS_MARCENEIRO, type Status } from "@/lib/status";
-import { agendarPedido, avisoEnviado, mudarStatus, sugerirDia } from "../actions";
+import { agendarPedido, avisoEnviado, clienteAceitouProposta, mudarStatus, sugerirDia } from "../actions";
 
 interface Props {
   id: number;
@@ -19,6 +19,8 @@ interface Props {
   dataDesejada: string | null;
   papel: Papel;
   mensagens: Record<string, string>;
+  aceite: string;
+  dataProposta: string | null;
 }
 
 export default function AcoesPedido(p: Props) {
@@ -76,6 +78,21 @@ export default function AcoesPedido(p: Props) {
           {!permitidos.includes(p.status) && <option value={p.status}>{ROTULO[p.status]}</option>}
         </select>
       </div>
+
+      {p.aceite === "proposto" && p.dataProposta && (
+        <div className="p-aviso">
+          O marceneiro propôs {dataBR(p.dataProposta)}. O cliente concordou?
+          <div className="p-botoes" style={{ marginTop: 8 }}>
+            <button className="p-btn laranja" disabled={pendente} onClick={() => iniciar(async () => {
+              const r = await clienteAceitouProposta(p.id);
+              if (!r.ok) return setMsg({ tipo: "erro", texto: r.erro });
+              setData(p.dataProposta!);
+              setMsg({ tipo: "ok", texto: `Confirmado para ${dataBR(p.dataProposta)}` });
+              router.refresh();
+            })}>👍 Cliente aceitou</button>
+          </div>
+        </div>
+      )}
 
       <h2>Data de produção / entrega</h2>
       <div className="p-form">

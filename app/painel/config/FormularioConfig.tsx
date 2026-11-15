@@ -2,7 +2,7 @@
 "use client";
 import { useState } from "react";
 import type { ConfigGeral } from "@/lib/configDb";
-import { apagarExemplos, criarExemplos, salvarConfig } from "../actions";
+import { apagarExemplos, coordenadasDoEndereco, criarExemplos, salvarConfig } from "../actions";
 
 const DIAS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 const TEXTOS: [string, string][] = [
@@ -61,6 +61,17 @@ export default function FormularioConfig({ inicial }: { inicial: ConfigGeral }) 
           ))}
         </div>
         <small>Feriados e folgas específicas: bloqueie o dia na tela Agenda.</small>
+      </section>
+
+      <section className="p-card p-form">
+        <h2>Ponto de saída das entregas (marcenaria)</h2>
+        <label>Endereço da marcenaria<input value={c.base.endereco} onChange={(e) => set("base", { ...c.base, endereco: e.target.value })} placeholder="Rua, número, bairro, cidade" /></label>
+        <button type="button" className="p-btn claro" onClick={async () => {
+          const r = await coordenadasDoEndereco(c.base.endereco);
+          if (r.ok) { set("base", { ...c.base, lat: r.lat!, lng: r.lng! }); setMsg({ ok: true, texto: "Localização encontrada! Clique em Salvar." }); }
+          else setMsg({ ok: false, texto: r.erro });
+        }}>📍 Achar localização pelo endereço</button>
+        <small>Localização atual: {c.base.lat.toFixed(4)}, {c.base.lng.toFixed(4)} — usada para sugerir a ordem das entregas.</small>
       </section>
 
       <section className="p-card p-form">
