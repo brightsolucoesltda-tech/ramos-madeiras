@@ -106,13 +106,13 @@ export const config = {
       mensagem: "Olá, Ramos Madeiras! Vi no site a MESA PIQUENIQUE e quero um orçamento.",
     },
     {
-      id: "banco-avulso",
-      titulo: "Banco avulso",
-      texto: "Banco separado, sem mesa. Para completar a sua mesa ou usar onde quiser.",
-      foto: "",
+      id: "mesa-2-bancos",
+      titulo: "Mesa + 2 bancos",
+      texto: "Conjunto com mesa e dois bancos separados (soltos). Ótimo para varanda, área de churrasco e cozinha.",
+      foto: "/images/mesa-com-2-bancos-natural.webp",
       preco: "Preço sob consulta",
       emBreve: false,
-      mensagem: "Olá, Ramos Madeiras! Vi no site o BANCO AVULSO (separado da mesa) e quero um orçamento.",
+      mensagem: "Olá, Ramos Madeiras! Vi no site o conjunto MESA + 2 BANCOS e quero um orçamento.",
     },
     {
       id: "kit-mesa",
