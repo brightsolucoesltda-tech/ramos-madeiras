@@ -44,9 +44,9 @@ export default async function Avisar() {
   return (
     <>
       <h1>Avisar clientes</h1>
-      <p className="p-card" style={{ fontSize: ".92rem" }}>
-        Toque no botão verde: o WhatsApp abre com a mensagem pronta, é só apertar <b>Enviar</b> e voltar aqui. O cliente fica marcado como <b>✓ avisado</b>.
-      </p>
+      <div className="p-card" style={{ fontSize: ".92rem" }}>
+        <p>Toque no botão verde: o WhatsApp abre com a mensagem pronta, é só apertar <b>Enviar</b> e voltar aqui. O cliente fica marcado como <b>✓ avisado</b>.</p>
+      </div>
       <ListaAvisos grupos={grupos} mensagens={cfg.mensagens} papel={u.papel} />
     </>
   );
