@@ -160,7 +160,7 @@ details p { margin-top: 8px; }
 .produtos { display: grid; gap: 16px; }
 .produto { background: #fff; border-radius: 14px; overflow: hidden; display: grid; }
 .produto img, .produto .foto-falta { width: 100%; aspect-ratio: 4/3; object-fit: cover; }
-.produto-info { padding: 14px 16px 18px; display: grid; gap: 8px; justify-items: start; }
+.produto-info { padding: 14px 16px 18px; display: grid; gap: 8px; justify-items: start; align-content: start; }
 .produto-info h3 { font-size: 1.35rem; }
 .produto-preco { color: var(--laranja-esc); }
 /* Destaque (Oktoberfest) */
