@@ -11,7 +11,7 @@ export const config = {
   whatsapp: process.env.NEXT_PUBLIC_WHATSAPP || "5541984036014",
   whatsappExibicao: process.env.NEXT_PUBLIC_WHATSAPP_EXIBICAO || "(41) 98403-6014",
   instagram: "https://instagram.com/ramosmadeiras",
-  cidadeBase: "Sua cidade - UF",
+  cidadeBase: "Fazenda Rio Grande - PR",
   siteUrl: process.env.NEXT_PUBLIC_SITE_URL || "https://ramos-madeiras.vercel.app",
 
   // ID do Meta Pixel (Facebook/Instagram). Deixe vazio para desligar.

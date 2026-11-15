@@ -135,3 +135,12 @@ alter default privileges in schema public grant all on sequences to service_role
 
 -- Avisos enviados ao cliente pelo WhatsApp: {"pronto": "2026-11-15T...", "em_producao": "..."}
 alter table public.pedidos add column if not exists avisos jsonb not null default '{}'::jsonb;
+
+-- Bairros perto da marcenaria (Fazenda Rio Grande e sul de Curitiba) — coordenadas aproximadas
+insert into public.bairros (nome, cidade, lat, lng) values
+ ('Centro','Fazenda Rio Grande',-25.6624,-49.3073),('Eucaliptos','Fazenda Rio Grande',-25.6500,-49.2950),
+ ('Iguaçu','Fazenda Rio Grande',-25.6400,-49.3100),('Nações','Fazenda Rio Grande',-25.6700,-49.3000),
+ ('Centro','Mandirituba',-25.7770,-49.3250),('Umbará','Curitiba',-25.5650,-49.2850),
+ ('Ganchinho','Curitiba',-25.5610,-49.2620),('Campo de Santana','Curitiba',-25.5900,-49.3300),
+ ('Caximba','Curitiba',-25.6050,-49.3350)
+on conflict do nothing;
