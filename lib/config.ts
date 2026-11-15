@@ -10,7 +10,7 @@ export const config = {
   // Número do WhatsApp com DDI+DDD, só dígitos. Pode ser trocado pela variável NEXT_PUBLIC_WHATSAPP.
   whatsapp: process.env.NEXT_PUBLIC_WHATSAPP || "5541984036014",
   whatsappExibicao: process.env.NEXT_PUBLIC_WHATSAPP_EXIBICAO || "(41) 98403-6014",
-  instagram: "https://instagram.com/ramosmadeiras",
+  instagram: "https://www.instagram.com/ramos_madeiras/",
   cidadeBase: "Fazenda Rio Grande - PR",
   siteUrl: process.env.NEXT_PUBLIC_SITE_URL || "https://ramos-madeiras.vercel.app",
 
@@ -73,11 +73,12 @@ export const config = {
     texto: "Mesa + banquetas em kit completo. Em breve por aqui!",
   },
 
+  // Depoimentos reais (prints do destaque "feedbacks" do Instagram). Sem nomes, para preservar os clientes.
   depoimentos: [
-    { nome: "Cliente 1", cidade: "Cidade", texto: "Depoimento de exemplo. Substitua por um relato real de cliente." },
-    { nome: "Cliente 2", cidade: "Cidade", texto: "Depoimento de exemplo. Substitua por um relato real de cliente." },
-    { nome: "Cliente 3", cidade: "Cidade", texto: "Depoimento de exemplo. Substitua por um relato real de cliente." },
-  ],
+    { nome: "Cliente", cidade: "via WhatsApp", texto: "Obrigado pelo trabalho de vocês, atenção e honestidade. Gratidão por tudo. Que Deus abençoe o trabalho e a empresa.", imagem: "/images/depoimento-gratidao.webp" },
+    { nome: "Cliente", cidade: "via WhatsApp", texto: "Obrigado pela atenção. Adorei as mesas!", imagem: "/images/depoimento-adorei-as-mesas.webp" },
+    { nome: "Cliente", cidade: "via WhatsApp", texto: "Só vim agradecer, já chegou a mesa! Depois que tiver tudo montado mando uma foto melhor.", imagem: "/images/depoimento-chegou-a-mesa.webp" },
+  ] as { nome: string; cidade: string; texto: string; imagem?: string }[],
 
   faq: [
     { p: "Qual o prazo de entrega?", r: "Tudo é feito sob encomenda. O prazo depende da agenda da marcenaria; no pedido você escolhe a data preferida e confirmamos pelo WhatsApp." },

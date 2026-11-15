@@ -151,3 +151,7 @@ details p { margin-top: 8px; }
   .passos { grid-template-columns: repeat(5, 1fr); }
   .passos li { flex-direction: column; text-align: center; }
 }
+
+/* Depoimentos com print da conversa */
+.depo { display: grid; gap: 10px; align-content: start; }
+.depo-print { width: 100%; border-radius: 10px; border: 1px solid #eadfcc; }

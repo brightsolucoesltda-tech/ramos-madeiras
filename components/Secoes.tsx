@@ -165,9 +165,11 @@ export function Depoimentos() {
     <section className="secao">
       <div className="container">
         <h2 className="h2">Quem comprou, aprovou</h2>
+        <p className="sub">Mensagens reais que recebemos dos clientes. <a className="link" href={config.instagram} target="_blank" rel="noopener">Veja mais no Instagram</a>.</p>
         <div className="depos">
           {config.depoimentos.map((d, i) => (
-            <blockquote key={i}>
+            <blockquote key={i} className="depo">
+              {d.imagem && <Foto src={d.imagem} alt={`Print de mensagem de cliente: ${d.texto}`} className="depo-print" />}
               “{d.texto}”<footer>{d.nome} · {d.cidade}</footer>
             </blockquote>
           ))}
