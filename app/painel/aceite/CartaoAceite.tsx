@@ -37,7 +37,8 @@ export default function CartaoAceite({ p, ocupacao, sugestao, mensagens, podeDec
       if (r.aviso) return setAviso(r.aviso);
       setAviso("");
       setWhats({ tipo: "confirmado", data: r.data! });
-      router.refresh();
+      // Só recarrega já se não houver WhatsApp; senão espera o toque no botão verde (para ele não sumir)
+      if (!p.telefone) router.refresh();
     });
   const propor = () =>
     iniciar(async () => {
@@ -46,7 +47,7 @@ export default function CartaoAceite({ p, ocupacao, sugestao, mensagens, podeDec
       if (!r.ok) return setErro(r.erro);
       setModo("");
       setWhats({ tipo: "proposta", data: novaData });
-      router.refresh();
+      if (!p.telefone) router.refresh();
     });
   const recusar = () => {
     if (!confirm("Recusar esta data? O vendedor vai combinar outra com o cliente.")) return;
