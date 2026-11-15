@@ -71,7 +71,7 @@ export default function AcoesPedido(p: Props) {
         {proximo && permitidos.includes(proximo) && (
           <button className="p-btn laranja" disabled={pendente} onClick={() => trocarStatus(proximo)}>Avançar: {ROTULO[proximo]}</button>
         )}
-        <select aria-label="Mudar status" value={p.status} disabled={pendente} onChange={(e) => trocarStatus(e.target.value as Status)} style={{ padding: 12, borderRadius: 10, border: "2px solid #e2d6c0" }}>
+        <select aria-label="Mudar status" value={p.status} disabled={pendente} onChange={(e) => trocarStatus(e.target.value as Status)} style={{ width: "auto", flex: 1, minWidth: 160 }}>
           {permitidos.map((s) => <option key={s} value={s}>{ROTULO[s]}</option>)}
           {!permitidos.includes(p.status) && <option value={p.status}>{ROTULO[p.status]}</option>}
         </select>

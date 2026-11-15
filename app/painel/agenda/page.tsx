@@ -60,7 +60,7 @@ export default async function Agenda({ searchParams }: { searchParams: Promise<{
               {d.bloqueado && <p className="p-aviso">🚫 Bloqueado{d.motivo ? `: ${d.motivo}` : ""}</p>}
               {d.semProducao && !d.bloqueado && <small>Sem produção neste dia da semana</small>}
               {doDia.map((p) => (
-                <Link key={p.id} href={`/painel/pedidos/${p.id}`} className="p-item" style={{ padding: 8 }}>
+                <Link key={p.id} href={`/painel/pedidos/${p.id}`} className={`p-item st-${p.status}`} style={{ padding: "10px 12px 10px 16px" }}>
                   <div className="linha">
                     <b>#{p.numero} {p.cliente_nome ?? "Cliente do site"}</b>
                     <span className={`p-badge ${p.status}`}>{ROTULO[p.status as Status]}</span>

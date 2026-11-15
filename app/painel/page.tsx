@@ -63,7 +63,7 @@ export default async function Pedidos({ searchParams }: { searchParams: Promise<
       <div className="p-lista">
         {(pedidos ?? []).length === 0 && <p className="p-card">Nenhum pedido encontrado.</p>}
         {(pedidos ?? []).map((p) => (
-          <Link key={p.id} href={`/painel/pedidos/${p.id}`} className="p-item">
+          <Link key={p.id} href={`/painel/pedidos/${p.id}`} className={`p-item st-${p.status}`}>
             <div className="linha">
               <b>#{p.numero} · {p.cliente_nome ?? "Cliente do site"}</b>
               <span className={`p-badge ${p.status}`}>{ROTULO[p.status as Status]}</span>
