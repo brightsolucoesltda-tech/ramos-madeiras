@@ -145,6 +145,52 @@ export function SobMedida() {
   );
 }
 
+/** Outros produtos: mesa piquenique, banco avulso e kit mesa (com botão de orçamento no WhatsApp). */
+export function OutrosProdutos() {
+  return (
+    <section className="secao secao-clara" id="outros-produtos">
+      <div className="container">
+        <h2 className="h2">Outros produtos</h2>
+        <p className="sub">Também em eucalipto, feitos sob encomenda e com pagamento após a entrega.</p>
+        <div className="produtos">
+          {config.outrosProdutos.map((p) => (
+            <article key={p.id} className="produto">
+              {p.foto ? <Foto src={p.foto} alt={p.titulo} /> : <div className="foto-falta" role="img" aria-label={p.titulo}><span>Foto em breve</span></div>}
+              <div className="produto-info">
+                {p.emBreve && <span className="selo">Em breve</span>}
+                <h3>{p.titulo}</h3>
+                <p>{p.texto}</p>
+                {p.preco && <b className="produto-preco">{p.preco}</b>}
+                {!p.emBreve && <BotaoWhats mensagem={p.mensagem} texto="Pedir orçamento" className="btn btn-whats" />}
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/** Destaque de confiança (ex.: Oktoberfest de Curitiba). Curto, para não carregar a página. */
+export function Destaque() {
+  const d = config.destaque;
+  if (!d.ativo) return null;
+  return (
+    <section className="secao">
+      <div className="container">
+        <div className="destaque">
+          <Foto src={d.foto} alt={d.titulo} />
+          <div>
+            <span className="selo">Destaque</span>
+            <h3>{d.titulo}</h3>
+            <p>{d.texto}</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export function KitMesa() {
   const k = config.kitMesa;
   return (

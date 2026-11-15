@@ -1,4 +1,4 @@
-import { Promo, Hero, ComoFunciona, TabelaMedidas, NaturalVerniz, Encomenda, SobMedida, KitMesa, Depoimentos, Faq, Rodape } from "@/components/Secoes";
+import { Promo, Hero, ComoFunciona, TabelaMedidas, NaturalVerniz, Encomenda, SobMedida, OutrosProdutos, Destaque, Depoimentos, Faq, Rodape } from "@/components/Secoes";
 import Configurador from "@/components/Configurador";
 import Galeria from "@/components/Galeria";
 import Fixos from "@/components/Fixos";
@@ -20,10 +20,11 @@ export default async function Home() {
         <TabelaMedidas tabela={tabela} />
         <NaturalVerniz tabela={tabela} />
         <Encomenda />
+        <OutrosProdutos />
         <SobMedida />
-        <KitMesa />
         <Galeria />
         <Depoimentos />
+        <Destaque />
         <Faq />
       </main>
       <Rodape />

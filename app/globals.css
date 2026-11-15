@@ -155,3 +155,21 @@ details p { margin-top: 8px; }
 /* Depoimentos com print da conversa */
 .depo { display: grid; gap: 10px; align-content: start; }
 .depo-print { width: 100%; border-radius: 10px; border: 1px solid #eadfcc; }
+
+/* Outros produtos */
+.produtos { display: grid; gap: 16px; }
+.produto { background: #fff; border-radius: 14px; overflow: hidden; display: grid; }
+.produto img, .produto .foto-falta { width: 100%; aspect-ratio: 4/3; object-fit: cover; }
+.produto-info { padding: 14px 16px 18px; display: grid; gap: 8px; justify-items: start; }
+.produto-info h3 { font-size: 1.35rem; }
+.produto-preco { color: var(--laranja-esc); }
+/* Destaque (Oktoberfest) */
+.destaque { display: grid; gap: 16px; background: var(--preto); color: var(--creme); border-radius: 16px; overflow: hidden; align-items: center; }
+.destaque img { width: 100%; aspect-ratio: 4/3; object-fit: cover; }
+.destaque > div { padding: 4px 20px 22px; display: grid; gap: 8px; justify-items: start; }
+.destaque h3 { font-size: 1.5rem; color: #ffb27a; }
+@media (min-width: 760px) {
+  .produtos { grid-template-columns: repeat(3, 1fr); }
+  .destaque { grid-template-columns: 1fr 1.3fr; }
+  .destaque > div { padding: 22px 28px 22px 0; }
+}

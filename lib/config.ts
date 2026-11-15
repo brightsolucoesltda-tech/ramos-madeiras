@@ -64,6 +64,73 @@ export const config = {
     mesaNaturalGramaRural: { src: "/images/mesa-natural-grama-rural.webp", alt: "Mesa natural aberta na grama, área rural" },
     bancoNaturalGramaQuadrada: { src: "/images/banco-natural-grama-quadrada.webp", alt: "Banco natural na grama" },
     mesaEnvernizadaPosta: { src: "/images/mesa-envernizada-posta-toalha-preta.webp", alt: "Mesa envernizada posta com pratos e toalha preta" },
+    // Fotos do Instagram
+    bancoNaturalDeck: { src: "/images/banco-natural-deck.webp", alt: "Banco que vira mesa natural em deck de madeira" },
+    mesaMognoCalcada: { src: "/images/mesa-mogno-calcada.webp", alt: "Mesa envernizada mogno aberta ao sol" },
+    bancoEnvernizadoJardim: { src: "/images/banco-envernizado-jardim.webp", alt: "Banco envernizado em jardim" },
+    bancoEnvernizadoGrama: { src: "/images/banco-envernizado-grama-sintetica.webp", alt: "Banco envernizado na grama sintética" },
+    mesaPostaCafe: { src: "/images/mesa-envernizada-posta-cafe.webp", alt: "Mesa envernizada posta para café" },
+    mesaCom2Bancos: { src: "/images/mesa-com-2-bancos-natural.webp", alt: "Mesa natural com dois bancos separados e banqueta" },
+    mesaPiquenique: { src: "/images/mesa-piquenique-envernizada.webp", alt: "Mesa piquenique envernizada com bancos presos" },
+    kitMesa: { src: "/images/kit-mesa-dobravel.webp", alt: "Kit mesa com cadeiras dobráveis de eucalipto" },
+    oktoberfest: { src: "/images/oktoberfest-curitiba.webp", alt: "Bancos-mesa da Ramos Madeiras na Oktoberfest de Curitiba" },
+  },
+
+  // GALERIA: ordem das fotos e filtro (natural | verniz). Para tirar uma foto, apague a linha.
+  galeria: [
+    { foto: "mesaEnvernizadaExterna", tipo: "verniz" },
+    { foto: "bancoNaturalDeck", tipo: "natural" },
+    { foto: "mesaMognoCalcada", tipo: "verniz" },
+    { foto: "bancoNaturalPisoBege", tipo: "natural" },
+    { foto: "bancoEnvernizadoJardim", tipo: "verniz" },
+    { foto: "mesaNaturalGramaRural", tipo: "natural" },
+    { foto: "bancoEnvernizadoVaranda", tipo: "verniz" },
+    { foto: "bancoNaturalGrama", tipo: "natural" },
+    { foto: "mesaPostaCafe", tipo: "verniz" },
+    { foto: "bancoNaturalGramaQuadrada", tipo: "natural" },
+    { foto: "bancoEnvernizadoGrama", tipo: "verniz" },
+    { foto: "mesaCom2Bancos", tipo: "natural" },
+    { foto: "mesaEnvernizadaPosta", tipo: "verniz" },
+    { foto: "mesaPiquenique", tipo: "verniz" },
+  ] as { foto: string; tipo: "natural" | "verniz" }[],
+
+  // OUTROS PRODUTOS (cards com "Pedir orçamento"). preco: texto livre, ex.: "a partir de R$ 300". foto: "" = "Foto em breve".
+  outrosProdutos: [
+    {
+      id: "mesa-piquenique",
+      titulo: "Mesa piquenique",
+      texto: "Mesa com os bancos já presos. Firme e prática para área externa, chácara, bar e restaurante.",
+      foto: "/images/mesa-piquenique-envernizada.webp",
+      preco: "Preço sob consulta",
+      emBreve: false,
+      mensagem: "Olá, Ramos Madeiras! Vi no site a MESA PIQUENIQUE e quero um orçamento.",
+    },
+    {
+      id: "banco-avulso",
+      titulo: "Banco avulso",
+      texto: "Banco separado, sem mesa. Para completar a sua mesa ou usar onde quiser.",
+      foto: "",
+      preco: "Preço sob consulta",
+      emBreve: false,
+      mensagem: "Olá, Ramos Madeiras! Vi no site o BANCO AVULSO (separado da mesa) e quero um orçamento.",
+    },
+    {
+      id: "kit-mesa",
+      titulo: "Kit mesa",
+      texto: "Mesa + cadeiras dobráveis de eucalipto. Em breve por aqui!",
+      foto: "/images/kit-mesa-dobravel.webp",
+      preco: "",
+      emBreve: true,
+      mensagem: "Olá, Ramos Madeiras! Quero saber mais sobre o KIT MESA.",
+    },
+  ],
+
+  // DESTAQUE de confiança (Oktoberfest). Para esconder, mude ativo para false.
+  destaque: {
+    ativo: true,
+    titulo: "Presentes na 1ª Oktoberfest de Curitiba",
+    texto: "Fornecemos 100 bancos-mesa para o evento. Qualidade que aguenta muita gente!",
+    foto: "/images/oktoberfest-curitiba.webp",
   },
 
   // KIT MESA (em breve). Para liberar, mude "emBreve" para false e edite o texto.

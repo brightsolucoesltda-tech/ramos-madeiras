@@ -4,16 +4,9 @@ import { useState } from "react";
 import Foto from "./Foto";
 import { config } from "@/lib/config";
 
-const f = config.fotos;
-const itens = [
-  { ...f.mesaEnvernizadaExterna, t: "verniz" },
-  { ...f.bancoNaturalPisoBege, t: "natural" },
-  { ...f.bancoNaturalGrama, t: "natural" },
-  { ...f.bancoEnvernizadoVaranda, t: "verniz" },
-  { ...f.mesaNaturalGramaRural, t: "natural" },
-  { ...f.bancoNaturalGramaQuadrada, t: "natural" },
-  { ...f.mesaEnvernizadaPosta, t: "verniz" },
-];
+// A lista e a ordem das fotos ficam em lib/config.ts (galeria)
+const fotos = config.fotos as Record<string, { src: string; alt: string }>;
+const itens = config.galeria.filter((g) => fotos[g.foto]).map((g) => ({ ...fotos[g.foto], t: g.tipo }));
 
 const filtros = [
   ["todos", "Todos"],
