@@ -1,4 +1,5 @@
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
+import { buscarCoordenadas } from "@/lib/geo";
 import { config } from "@/lib/config";
 import { carregarConfig } from "@/lib/configDb";
 import { precoUnitario } from "@/lib/pedido";
@@ -44,6 +45,8 @@ export async function POST(req: Request) {
       aceite: "pendente",
       cliente_nome: texto(c.nome, 80) || null,
       telefone,
+      endereco: texto(c.endereco, 160) || null,
+      referencia: texto(c.cep, 9) ? `CEP ${texto(c.cep, 9)}` : null,
       bairro,
       cidade: texto(c.cidade),
       itens: [{ medidaId, acabId, quantidade }],
@@ -61,5 +64,13 @@ export async function POST(req: Request) {
   }
   const numero = String(1000 + criado.id);
   await db.from("pedidos").update({ numero }).eq("id", criado.id);
+  // Localização do endereço para a rota: roda DEPOIS de responder, para não atrasar a abertura do WhatsApp
+  const enderecoCompleto = [texto(c.endereco, 160), bairro, texto(c.cidade)].filter(Boolean).join(", ");
+  if (texto(c.endereco, 160)) {
+    after(async () => {
+      const coords = await buscarCoordenadas(enderecoCompleto);
+      if (coords) await admin().from("pedidos").update(coords).eq("id", criado.id);
+    });
+  }
   return NextResponse.json({ numero, salvo: true });
 }

@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { config } from "@/lib/config";
+import { buscarCep, mascaraCep } from "@/lib/cep";
 import { brl, precoUnitario, type TabelaPreco } from "@/lib/pedido";
 import { salvarPedido, type ItemPedido, type PedidoForm } from "../actions";
 
@@ -12,6 +13,19 @@ export default function FormularioPedido({ inicial, tabela, vendedores, bairros 
   const [erro, setErro] = useState("");
   const [salvando, setSalvando] = useState(false);
   const router = useRouter();
+  const [cep, setCep] = useState("");
+  const [cepMsg, setCepMsg] = useState("");
+  // CEP completo: preenche rua, bairro e cidade (o vendedor só completa o número)
+  async function mudarCep(valor: string) {
+    const v = mascaraCep(valor);
+    setCep(v);
+    if (v.replace(/\D/g, "").length !== 8) return setCepMsg("");
+    setCepMsg("Buscando…");
+    const e = await buscarCep(v);
+    if (!e) return setCepMsg("CEP não encontrado.");
+    setF((x) => ({ ...x, endereco: e.rua ? `${e.rua}, ` : x.endereco, bairro: e.bairro || x.bairro, cidade: e.cidade || x.cidade, referencia: x.referencia || `CEP ${v}` }));
+    setCepMsg("✓ Endereço preenchido — complete o número.");
+  }
 
   const totalCalculado = useMemo(() => f.itens.reduce((s, i) => s + precoUnitario(i.medidaId, i.acabId, tabela) * i.quantidade, 0), [f.itens, tabela]);
   const valor = valorManual ? f.valor_total : totalCalculado;
@@ -33,7 +47,8 @@ export default function FormularioPedido({ inicial, tabela, vendedores, bairros 
     <form className="p-card p-form" onSubmit={enviar}>
       <label>Nome do cliente *<input value={f.cliente_nome} onChange={(e) => set("cliente_nome", e.target.value)} required /></label>
       <label>Telefone (WhatsApp)<input type="tel" inputMode="tel" value={f.telefone} onChange={(e) => set("telefone", e.target.value)} placeholder="(41) 99999-9999" /></label>
-      <label>Endereço<input value={f.endereco} onChange={(e) => set("endereco", e.target.value)} placeholder="Rua, número" /></label>
+      <label>CEP (preenche sozinho)<input value={cep} onChange={(e) => mudarCep(e.target.value)} placeholder="00000-000" inputMode="numeric" />{cepMsg && <small>{cepMsg}</small>}</label>
+      <label>Endereço (rua e número)<input value={f.endereco} onChange={(e) => set("endereco", e.target.value)} placeholder="Rua, número" /></label>
       <div className="p-grid2">
         <label>Bairro<input list="lista-bairros" value={f.bairro} onChange={(e) => set("bairro", e.target.value)} /></label>
         <label>Cidade<input value={f.cidade} onChange={(e) => set("cidade", e.target.value)} /></label>

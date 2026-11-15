@@ -42,6 +42,7 @@ export interface DadosPedido {
   data: string; // AAAA-MM-DD ou ""
   origem: string;
   nome?: string;
+  endereco?: string;
 }
 
 const dataBR = (iso: string) => (iso ? iso.split("-").reverse().join("/") : "a combinar");
@@ -57,7 +58,7 @@ export function mensagemPedido(d: DadosPedido, t: TabelaPreco = tabelaPadrao) {
     `• Acabamento: ${a.nome}`,
     `• Quantidade: ${d.quantidade}`,
     `• Total: ${brl(total)} + entrega`,
-    `• Bairro: ${d.bairro}${d.cidade ? " - " + d.cidade : ""}`,
+    `• Endereço: ${d.endereco ? d.endereco + " - " : ""}${d.bairro}${d.cidade ? " - " + d.cidade : ""}`,
     `• Data desejada: ${dataBR(d.data)}`,
     `Podem confirmar? [origem: ${d.origem || "direto"}]`,
   ].join("\n");

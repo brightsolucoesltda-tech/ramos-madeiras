@@ -2,6 +2,7 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import { config } from "@/lib/config";
+import { buscarCep, mascaraCep } from "@/lib/cep";
 import { brl, precoUnitario, mensagemPedido, linkWhatsApp, rastrear, type TabelaPreco } from "@/lib/pedido";
 
 /** Formata o WhatsApp enquanto digita: (41) 99999-9999 */
@@ -24,8 +25,12 @@ export default function Configurador({ tabela }: { tabela: TabelaPreco }) {
   const [qtd, setQtd] = useState(1);
   const [nome, setNome] = useState("");
   const [whats, setWhats] = useState("");
+  const [cep, setCep] = useState("");
+  const [rua, setRua] = useState("");
+  const [numeroCasa, setNumeroCasa] = useState("");
   const [bairro, setBairro] = useState("");
   const [cidade, setCidade] = useState("");
+  const [cepStatus, setCepStatus] = useState<"" | "buscando" | "ok" | "nao-achou">("");
   const [data, setData] = useState("");
   const [datas, setDatas] = useState<string[] | null>(null);
   const [enviando, setEnviando] = useState(false);
@@ -37,6 +42,20 @@ export default function Configurador({ tabela }: { tabela: TabelaPreco }) {
   }, []);
 
   const total = useMemo(() => precoUnitario(medidaId, acabId, tabela) * qtd, [medidaId, acabId, qtd, tabela]);
+
+  // Ao completar os 8 números do CEP, preenche rua, bairro e cidade sozinho
+  async function mudarCep(valor: string) {
+    const v = mascaraCep(valor);
+    setCep(v);
+    if (v.replace(/\D/g, "").length !== 8) return setCepStatus("");
+    setCepStatus("buscando");
+    const e = await buscarCep(v);
+    if (!e) return setCepStatus("nao-achou");
+    if (e.rua) setRua(e.rua);
+    if (e.bairro) setBairro(e.bairro);
+    if (e.cidade) setCidade(`${e.cidade}${e.uf ? " - " + e.uf : ""}`);
+    setCepStatus("ok");
+  }
 
   // Origem do cliente pelos parâmetros UTM (guardada na sessão para não perder ao navegar)
   function lerOrigem() {
@@ -57,10 +76,15 @@ export default function Configurador({ tabela }: { tabela: TabelaPreco }) {
       setErro("Informe o seu WhatsApp com DDD para a gente confirmar o pedido.");
       return;
     }
+    if (!rua.trim() || !numeroCasa.trim()) {
+      setErro("Informe a rua e o número do endereço de entrega.");
+      return;
+    }
     if (!bairro.trim()) {
       setErro("Informe o seu bairro para estimarmos a entrega.");
       return;
     }
+    const endereco = `${rua.trim()}, ${numeroCasa.trim()}`;
     setEnviando(true);
     const origem = lerOrigem();
     let numero = "----";
@@ -68,7 +92,7 @@ export default function Configurador({ tabela }: { tabela: TabelaPreco }) {
       const r = await fetch("/api/pedidos", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ medidaId, acabId, quantidade: qtd, nome, telefone: digitos, bairro, cidade, data, origem, total }),
+        body: JSON.stringify({ medidaId, acabId, quantidade: qtd, nome, telefone: digitos, endereco, cep, bairro, cidade, data, origem, total }),
       });
       const j = await r.json();
       if (r.ok) numero = j.numero;
@@ -76,7 +100,7 @@ export default function Configurador({ tabela }: { tabela: TabelaPreco }) {
       /* se falhar, ainda abrimos o WhatsApp para não perder a venda */
     }
     rastrear("Lead", { value: total, currency: "BRL" });
-    const msg = mensagemPedido({ numero, medidaId, acabId, quantidade: qtd, bairro, cidade, data, origem, nome }, tabela);
+    const msg = mensagemPedido({ numero, medidaId, acabId, quantidade: qtd, endereco, bairro, cidade, data, origem, nome }, tabela);
     // Abre o WhatsApp na mesma aba: no celular vai direto para o app e não é bloqueado como pop-up.
     window.location.href = linkWhatsApp(msg);
     setEnviando(false);
@@ -132,7 +156,16 @@ export default function Configurador({ tabela }: { tabela: TabelaPreco }) {
             <div className="campos">
               <label>Seu nome<input value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Como podemos te chamar?" autoComplete="name" /></label>
               <label>Seu WhatsApp (com DDD) *<input value={whats} onChange={(e) => setWhats(mascaraTelefone(e.target.value))} placeholder="(41) 99999-9999" type="tel" inputMode="numeric" autoComplete="tel-national" required /></label>
-              <label>Bairro<input value={bairro} onChange={(e) => setBairro(e.target.value)} placeholder="Seu bairro" autoComplete="address-level3" /></label>
+              <label>
+                CEP (preenche o endereço sozinho)
+                <input value={cep} onChange={(e) => mudarCep(e.target.value)} placeholder="00000-000" inputMode="numeric" autoComplete="postal-code" />
+                {cepStatus === "buscando" && <small className="nota">Buscando endereço…</small>}
+                {cepStatus === "nao-achou" && <small className="nota">CEP não encontrado — preencha o endereço abaixo.</small>}
+                {cepStatus === "ok" && <small className="nota">✓ Endereço encontrado. Confira e coloque o número.</small>}
+              </label>
+              <label>Rua *<input value={rua} onChange={(e) => setRua(e.target.value)} placeholder="Nome da rua" autoComplete="address-line1" /></label>
+              <label>Número *<input value={numeroCasa} onChange={(e) => setNumeroCasa(e.target.value)} placeholder="Ex.: 124" inputMode="text" autoComplete="address-line2" /></label>
+              <label>Bairro *<input value={bairro} onChange={(e) => setBairro(e.target.value)} placeholder="Seu bairro" autoComplete="address-level3" /></label>
               <label>Cidade<input value={cidade} onChange={(e) => setCidade(e.target.value)} placeholder="Sua cidade" autoComplete="address-level2" /></label>
             </div>
           </fieldset>
