@@ -2,17 +2,23 @@ import { Promo, Hero, ComoFunciona, TabelaMedidas, NaturalVerniz, Encomenda, Sob
 import Configurador from "@/components/Configurador";
 import Galeria from "@/components/Galeria";
 import Fixos from "@/components/Fixos";
+import { carregarConfig } from "@/lib/configDb";
 
-export default function Home() {
+// Preços e faixa de promoção vêm do painel; a página se atualiza sozinha a cada 60 segundos.
+export const revalidate = 60;
+
+export default async function Home() {
+  const cfg = await carregarConfig();
+  const tabela = { medidas: cfg.medidas, adicionalVerniz: cfg.adicionalVerniz };
   return (
     <>
-      <Promo />
-      <Hero />
+      <Promo promo={cfg.promo} />
+      <Hero tabela={tabela} />
       <main>
         <ComoFunciona />
-        <Configurador />
-        <TabelaMedidas />
-        <NaturalVerniz />
+        <Configurador tabela={tabela} />
+        <TabelaMedidas tabela={tabela} />
+        <NaturalVerniz tabela={tabela} />
         <Encomenda />
         <SobMedida />
         <KitMesa />

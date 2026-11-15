@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Alfa_Slab_One, Inter } from "next/font/google";
 import Script from "next/script";
 import { config } from "@/lib/config";
+import { carregarConfig } from "@/lib/configDb";
 import "./globals.css";
 
 // Título com personalidade (slab forte) e texto em sans-serif legível
@@ -27,8 +28,9 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = { themeColor: "#c4531a", width: "device-width", initialScale: 1 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
-  const pixel = config.metaPixelId;
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  // ID do Pixel vem do painel (ou da variável de ambiente); vazio = desligado
+  const pixel = (await carregarConfig()).metaPixelId || config.metaPixelId;
   return (
     <html lang="pt-BR" className={`${titulo.variable} ${texto.variable}`}>
       <body>

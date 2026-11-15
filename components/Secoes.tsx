@@ -2,17 +2,17 @@
 import Foto from "./Foto";
 import BotaoWhats from "./BotaoWhats";
 import { config } from "@/lib/config";
-import { brl } from "@/lib/pedido";
+import { brl, type TabelaPreco } from "@/lib/pedido";
 
 const f = config.fotos;
-const menor = Math.min(...config.medidas.map((m) => m.preco));
 
-export function Promo() {
-  if (!config.promo.ativa) return null;
-  return <div className="promo">{config.promo.texto}</div>;
+export function Promo({ promo }: { promo: { ativa: boolean; texto: string } }) {
+  if (!promo.ativa) return null;
+  return <div className="promo">{promo.texto}</div>;
 }
 
-export function Hero() {
+export function Hero({ tabela }: { tabela: TabelaPreco }) {
+  const menor = Math.min(...tabela.medidas.map((m) => m.preco));
   return (
     <header className="hero">
       <Foto src={f.mesaEnvernizadaExterna.src} alt={f.mesaEnvernizadaExterna.alt} className="hero-foto" prioridade />
@@ -58,7 +58,7 @@ export function ComoFunciona() {
   );
 }
 
-export function TabelaMedidas() {
+export function TabelaMedidas({ tabela }: { tabela: TabelaPreco }) {
   return (
     <section className="secao secao-clara">
       <div className="container">
@@ -69,24 +69,24 @@ export function TabelaMedidas() {
               <tr><th>Medida</th><th>Lugares</th><th>Natural</th><th>Envernizado</th></tr>
             </thead>
             <tbody>
-              {config.medidas.map((m) => (
+              {tabela.medidas.map((m) => (
                 <tr key={m.id}>
                   <td><b>{m.medida}</b></td>
                   <td>{m.lugares}</td>
                   <td>{brl(m.preco)}</td>
-                  <td>{brl(m.preco + config.adicionalVerniz)}</td>
+                  <td>{brl(m.preco + tabela.adicionalVerniz)}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-        <p className="nota">Envernizado: + {brl(config.adicionalVerniz)} em qualquer tamanho. Entrega: taxa a consultar (depende do bairro).</p>
+        <p className="nota">Envernizado: + {brl(tabela.adicionalVerniz)} em qualquer tamanho. Entrega: taxa a consultar (depende do bairro).</p>
       </div>
     </section>
   );
 }
 
-export function NaturalVerniz() {
+export function NaturalVerniz({ tabela }: { tabela: TabelaPreco }) {
   return (
     <section className="secao">
       <div className="container">
@@ -101,7 +101,7 @@ export function NaturalVerniz() {
             <Foto src={f.bancoEnvernizadoVaranda.src} alt={f.bancoEnvernizadoVaranda.alt} />
             <h3>Envernizado</h3>
             <p>
-              Verniz <b>Mogno</b> (alaranjado/avermelhado) ou <b>Embuia</b> (marrom mais escuro). Mais proteção e acabamento. + {brl(config.adicionalVerniz)}.
+              Verniz <b>Mogno</b> (alaranjado/avermelhado) ou <b>Embuia</b> (marrom mais escuro). Mais proteção e acabamento. + {brl(tabela.adicionalVerniz)}.
             </p>
           </article>
         </div>

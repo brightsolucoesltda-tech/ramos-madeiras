@@ -2,15 +2,15 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import { config } from "@/lib/config";
-import { brl, precoUnitario, mensagemPedido, linkWhatsApp, rastrear } from "@/lib/pedido";
+import { brl, precoUnitario, mensagemPedido, linkWhatsApp, rastrear, type TabelaPreco } from "@/lib/pedido";
 
 const dataLonga = (iso: string) => {
   const [a, m, d] = iso.split("-").map(Number);
   return new Date(a, m - 1, d).toLocaleDateString("pt-BR", { weekday: "short", day: "2-digit", month: "2-digit" });
 };
 
-export default function Configurador() {
-  const [medidaId, setMedidaId] = useState(config.medidas[2].id);
+export default function Configurador({ tabela }: { tabela: TabelaPreco }) {
+  const [medidaId, setMedidaId] = useState(tabela.medidas[Math.min(2, tabela.medidas.length - 1)].id);
   const [acabId, setAcabId] = useState("natural");
   const [qtd, setQtd] = useState(1);
   const [bairro, setBairro] = useState("");
@@ -25,7 +25,7 @@ export default function Configurador() {
     fetch("/api/disponibilidade").then((r) => r.json()).then((j) => setDatas(j.datas)).catch(() => setDatas([]));
   }, []);
 
-  const total = useMemo(() => precoUnitario(medidaId, acabId) * qtd, [medidaId, acabId, qtd]);
+  const total = useMemo(() => precoUnitario(medidaId, acabId, tabela) * qtd, [medidaId, acabId, qtd, tabela]);
 
   // Origem do cliente pelos parâmetros UTM (guardada na sessão para não perder ao navegar)
   function lerOrigem() {
@@ -60,7 +60,7 @@ export default function Configurador() {
       /* se falhar, ainda abrimos o WhatsApp para não perder a venda */
     }
     rastrear("Lead", { value: total, currency: "BRL" });
-    const msg = mensagemPedido({ numero, medidaId, acabId, quantidade: qtd, bairro, cidade, data, origem });
+    const msg = mensagemPedido({ numero, medidaId, acabId, quantidade: qtd, bairro, cidade, data, origem }, tabela);
     window.open(linkWhatsApp(msg), "_blank", "noopener");
     setEnviando(false);
   }
@@ -77,7 +77,7 @@ export default function Configurador() {
           <fieldset>
             <legend>1. Medida</legend>
             <div className="cards">
-              {config.medidas.map((m) => (
+              {tabela.medidas.map((m) => (
                 <button key={m.id} type="button" className={`card-opc ${medidaId === m.id ? "ativo" : ""}`} onClick={() => setMedidaId(m.id)} aria-pressed={medidaId === m.id}>
                   <b>{m.medida}</b>
                   <span>{m.lugares}</span>
@@ -95,7 +95,7 @@ export default function Configurador() {
                   <i className="amostra" style={{ background: a.cor }} />
                   <b>{a.nome}</b>
                   <span>{a.descricao}</span>
-                  <em>{a.verniz ? `+ ${brl(config.adicionalVerniz)}` : "Incluso"}</em>
+                  <em>{a.verniz ? `+ ${brl(tabela.adicionalVerniz)}` : "Incluso"}</em>
                 </button>
               ))}
             </div>

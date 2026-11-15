@@ -1,0 +1,56 @@
+/* Painel interno — feito para celular primeiro. Classes começam com p- para não misturar com o site. */
+.p-app { min-height: 100vh; background: #f4efe6; color: #2a211b; padding-bottom: 76px; }
+.p-topo { position: sticky; top: 0; z-index: 20; background: #161210; color: #fff; display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; }
+.p-topo b { font-family: var(--font-titulo), serif; color: #ffb27a; font-weight: 400; font-size: 1.1rem; }
+.p-topo small { opacity: .75; display: block; font-size: .75rem; }
+.p-topo form button { background: none; border: 1px solid #fff5; color: #fff; padding: 6px 12px; border-radius: 8px; cursor: pointer; }
+.p-nav { position: fixed; bottom: 0; left: 0; right: 0; z-index: 30; background: #161210; display: flex; justify-content: space-around; padding: 6px 4px calc(6px + env(safe-area-inset-bottom)); }
+.p-nav a { color: #ddd; text-decoration: none; font-size: .72rem; text-align: center; padding: 6px 8px; border-radius: 10px; display: grid; gap: 2px; min-width: 56px; }
+.p-nav a span { font-size: 1.25rem; }
+.p-nav a.ativo { background: #c4531a; color: #fff; }
+.p-main { width: min(960px, 100% - 24px); margin: 16px auto; display: grid; gap: 14px; }
+.p-main h1 { font-family: var(--font-titulo), serif; font-weight: 400; font-size: 1.5rem; }
+.p-main h2 { font-size: 1.05rem; margin-bottom: 6px; }
+.p-card { background: #fff; border-radius: 14px; padding: 14px; box-shadow: 0 1px 3px #0001; display: grid; gap: 8px; }
+.p-lista { display: grid; gap: 10px; }
+.p-item { display: grid; gap: 4px; text-decoration: none; color: inherit; background: #fff; border-radius: 14px; padding: 12px 14px; box-shadow: 0 1px 3px #0001; border-left: 6px solid #c4531a; }
+.p-item .linha { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+.p-item small { color: #6b5d50; }
+.p-badge { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: .75rem; font-weight: 700; background: #eee; white-space: nowrap; }
+.p-badge.novo { background: #ffe3b3; } .p-badge.confirmado { background: #cfe8ff; } .p-badge.em_producao { background: #e6d5ff; }
+.p-badge.pronto { background: #c8f0d2; } .p-badge.saiu_entrega { background: #ffd0c4; } .p-badge.entregue { background: #bfe5c9; }
+.p-badge.reagendado { background: #fff3a8; } .p-badge.cancelado { background: #ddd; color: #777; }
+.p-btn { display: inline-flex; justify-content: center; align-items: center; gap: 6px; padding: 12px 16px; border-radius: 10px; border: 0; font-weight: 700; font-size: 1rem; cursor: pointer; text-decoration: none; background: #161210; color: #fff; font-family: inherit; }
+.p-btn.laranja { background: #c4531a; } .p-btn.verde { background: #25d366; color: #0b3d1e; } .p-btn.claro { background: #eadfcc; color: #2a211b; } .p-btn.vermelho { background: #b3261e; }
+.p-btn:disabled { opacity: .5; }
+.p-fab { position: fixed; right: 16px; bottom: 84px; z-index: 25; box-shadow: 0 4px 12px #0005; border-radius: 999px; padding: 14px 20px; }
+.p-form { display: grid; gap: 12px; }
+.p-form label { display: grid; gap: 4px; font-size: .85rem; font-weight: 600; }
+.p-form input, .p-form select, .p-form textarea { padding: 12px; border: 2px solid #e2d6c0; border-radius: 10px; font-size: 1rem; font-family: inherit; background: #fff; color: #2a211b; width: 100%; }
+.p-form input:focus, .p-form select:focus, .p-form textarea:focus { outline: 0; border-color: #c4531a; }
+.p-grid2 { display: grid; gap: 10px; grid-template-columns: 1fr 1fr; }
+.p-linha-item { display: grid; grid-template-columns: 2fr 2fr 70px 40px; gap: 6px; align-items: end; }
+.p-erro { background: #fde3df; color: #8a1c14; padding: 10px; border-radius: 10px; font-weight: 600; }
+.p-aviso { background: #fff3c4; color: #6b4e00; padding: 10px; border-radius: 10px; font-weight: 600; }
+.p-ok { background: #d8f3e0; color: #14532d; padding: 10px; border-radius: 10px; font-weight: 600; }
+.p-botoes { display: flex; flex-wrap: wrap; gap: 8px; }
+.p-filtros summary { cursor: pointer; font-weight: 700; padding: 6px 0; }
+.p-kv { display: grid; grid-template-columns: 110px 1fr; gap: 4px 10px; font-size: .95rem; }
+.p-kv dt { color: #6b5d50; }
+/* Agenda */
+.p-dia { display: grid; gap: 6px; }
+.p-barra { height: 14px; border-radius: 999px; background: #eadfcc; overflow: hidden; }
+.p-barra i { display: block; height: 100%; border-radius: 999px; }
+.p-barra i.verde { background: #2e9e57; } .p-barra i.amarelo { background: #e6b422; } .p-barra i.vermelho { background: #c9302c; }
+.p-dia.bloq { opacity: .65; background: #eee; }
+.p-nav-dias { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.p-semana { display: grid; gap: 10px; }
+.p-kpis { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.p-kpi { background: #fff; border-radius: 14px; padding: 14px; }
+.p-kpi b { display: block; font-size: 1.6rem; color: #c4531a; }
+.p-tabela { width: 100%; border-collapse: collapse; background: #fff; border-radius: 12px; overflow: hidden; font-size: .95rem; }
+.p-tabela th, .p-tabela td { padding: 10px; text-align: left; border-bottom: 1px solid #eee; }
+.p-login { min-height: 100vh; display: grid; place-items: center; background: #161210; padding: 16px; }
+.p-login .p-card { width: min(380px, 100%); padding: 24px; }
+.p-login h1 { font-family: var(--font-titulo), serif; font-weight: 400; color: #c4531a; }
+@media (min-width: 760px) { .p-kpis { grid-template-columns: repeat(4, 1fr); } .p-semana { grid-template-columns: repeat(2, 1fr); } }
