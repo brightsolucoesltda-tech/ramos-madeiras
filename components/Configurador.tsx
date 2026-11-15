@@ -4,6 +4,15 @@ import { useEffect, useMemo, useState } from "react";
 import { config } from "@/lib/config";
 import { brl, precoUnitario, mensagemPedido, linkWhatsApp, rastrear, type TabelaPreco } from "@/lib/pedido";
 
+/** Formata o WhatsApp enquanto digita: (41) 99999-9999 */
+function mascaraTelefone(v: string) {
+  const d = v.replace(/\D/g, "").slice(0, 11);
+  if (d.length <= 2) return d.length ? `(${d}` : "";
+  if (d.length <= 6) return `(${d.slice(0, 2)}) ${d.slice(2)}`;
+  if (d.length <= 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;
+  return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
+}
+
 const dataLonga = (iso: string) => {
   const [a, m, d] = iso.split("-").map(Number);
   return new Date(a, m - 1, d).toLocaleDateString("pt-BR", { weekday: "short", day: "2-digit", month: "2-digit" });
@@ -13,6 +22,8 @@ export default function Configurador({ tabela }: { tabela: TabelaPreco }) {
   const [medidaId, setMedidaId] = useState(tabela.medidas[Math.min(2, tabela.medidas.length - 1)].id);
   const [acabId, setAcabId] = useState("natural");
   const [qtd, setQtd] = useState(1);
+  const [nome, setNome] = useState("");
+  const [whats, setWhats] = useState("");
   const [bairro, setBairro] = useState("");
   const [cidade, setCidade] = useState("");
   const [data, setData] = useState("");
@@ -41,6 +52,11 @@ export default function Configurador({ tabela }: { tabela: TabelaPreco }) {
 
   async function enviar() {
     setErro("");
+    const digitos = whats.replace(/\D/g, "");
+    if (digitos.length < 10) {
+      setErro("Informe o seu WhatsApp com DDD para a gente confirmar o pedido.");
+      return;
+    }
     if (!bairro.trim()) {
       setErro("Informe o seu bairro para estimarmos a entrega.");
       return;
@@ -52,7 +68,7 @@ export default function Configurador({ tabela }: { tabela: TabelaPreco }) {
       const r = await fetch("/api/pedidos", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ medidaId, acabId, quantidade: qtd, bairro, cidade, data, origem, total }),
+        body: JSON.stringify({ medidaId, acabId, quantidade: qtd, nome, telefone: digitos, bairro, cidade, data, origem, total }),
       });
       const j = await r.json();
       if (r.ok) numero = j.numero;
@@ -60,8 +76,9 @@ export default function Configurador({ tabela }: { tabela: TabelaPreco }) {
       /* se falhar, ainda abrimos o WhatsApp para não perder a venda */
     }
     rastrear("Lead", { value: total, currency: "BRL" });
-    const msg = mensagemPedido({ numero, medidaId, acabId, quantidade: qtd, bairro, cidade, data, origem }, tabela);
-    window.open(linkWhatsApp(msg), "_blank", "noopener");
+    const msg = mensagemPedido({ numero, medidaId, acabId, quantidade: qtd, bairro, cidade, data, origem, nome }, tabela);
+    // Abre o WhatsApp na mesma aba: no celular vai direto para o app e não é bloqueado como pop-up.
+    window.location.href = linkWhatsApp(msg);
     setEnviando(false);
   }
 
@@ -111,8 +128,10 @@ export default function Configurador({ tabela }: { tabela: TabelaPreco }) {
           </fieldset>
 
           <fieldset>
-            <legend>4. Onde entregar</legend>
+            <legend>4. Seus dados e onde entregar</legend>
             <div className="campos">
+              <label>Seu nome<input value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Como podemos te chamar?" autoComplete="name" /></label>
+              <label>Seu WhatsApp (com DDD) *<input value={whats} onChange={(e) => setWhats(mascaraTelefone(e.target.value))} placeholder="(41) 99999-9999" type="tel" inputMode="numeric" autoComplete="tel-national" required /></label>
               <label>Bairro<input value={bairro} onChange={(e) => setBairro(e.target.value)} placeholder="Seu bairro" autoComplete="address-level3" /></label>
               <label>Cidade<input value={cidade} onChange={(e) => setCidade(e.target.value)} placeholder="Sua cidade" autoComplete="address-level2" /></label>
             </div>

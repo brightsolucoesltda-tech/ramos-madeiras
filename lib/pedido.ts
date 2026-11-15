@@ -41,6 +41,7 @@ export interface DadosPedido {
   cidade: string;
   data: string; // AAAA-MM-DD ou ""
   origem: string;
+  nome?: string;
 }
 
 const dataBR = (iso: string) => (iso ? iso.split("-").reverse().join("/") : "a combinar");
@@ -51,7 +52,7 @@ export function mensagemPedido(d: DadosPedido, t: TabelaPreco = tabelaPadrao) {
   const a = config.acabamentos.find((x) => x.id === d.acabId)!;
   const total = precoUnitario(d.medidaId, d.acabId, t) * d.quantidade;
   return [
-    `Olá, ${config.nome}! Fiz meu pedido pelo site (nº ${d.numero}):`,
+    `Olá, ${config.nome}!${d.nome?.trim() ? ` Sou ${d.nome.trim()} e` : ""} fiz meu pedido pelo site (nº ${d.numero}):`.replace("! fiz", "! Fiz"),
     `• Banco-mesa ${m.id} (${m.lugares})`,
     `• Acabamento: ${a.nome}`,
     `• Quantidade: ${d.quantidade}`,

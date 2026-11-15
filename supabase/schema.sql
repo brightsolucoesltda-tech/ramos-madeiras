@@ -132,3 +132,6 @@ grant all on all tables in schema public to service_role;
 grant all on all sequences in schema public to service_role;
 alter default privileges in schema public grant all on tables to service_role;
 alter default privileges in schema public grant all on sequences to service_role;
+
+-- Avisos enviados ao cliente pelo WhatsApp: {"pronto": "2026-11-15T...", "em_producao": "..."}
+alter table public.pedidos add column if not exists avisos jsonb not null default '{}'::jsonb;

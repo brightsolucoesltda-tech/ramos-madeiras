@@ -6,6 +6,7 @@ import { apagarExemplos, criarExemplos, salvarConfig } from "../actions";
 
 const DIAS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 const TEXTOS: [string, string][] = [
+  ["em_producao", "Seu banco está em produção"],
   ["confirmado", "Confirmação de data"],
   ["pronto", "Seu banco está pronto"],
   ["saiu_entrega", "Saindo para entrega"],

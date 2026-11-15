@@ -21,11 +21,16 @@ export async function POST(req: Request) {
   const bairro = texto(c.bairro);
   const quantidade = Math.round(Number(c.quantidade));
   const data = /^\d{4}-\d{2}-\d{2}$/.test(texto(c.data, 10)) ? texto(c.data, 10) : null;
+  // WhatsApp do cliente é obrigatório (só dígitos, com DDD: 10 ou 11 números)
+  const telefone = String(c.telefone ?? "").replace(/\D/g, "").slice(0, 13);
 
   const cfg = await carregarConfig();
   const unit = precoUnitario(medidaId, acabId, cfg);
   if (!unit || !bairro || !(quantidade >= 1 && quantidade <= 20)) {
     return NextResponse.json({ erro: "Faltam dados do pedido" }, { status: 400 });
+  }
+  if (telefone.length < 10) {
+    return NextResponse.json({ erro: "Informe o WhatsApp com DDD" }, { status: 400 });
   }
 
   const db = admin();
@@ -36,7 +41,9 @@ export async function POST(req: Request) {
     .insert({
       numero: provisorio,
       status: "novo",
-      aceite: data ? "pendente" : "pendente",
+      aceite: "pendente",
+      cliente_nome: texto(c.nome, 80) || null,
+      telefone,
       bairro,
       cidade: texto(c.cidade),
       itens: [{ medidaId, acabId, quantidade }],

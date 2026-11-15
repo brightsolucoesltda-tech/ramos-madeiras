@@ -6,7 +6,7 @@ import type { Papel } from "@/lib/auth";
 import { dataBR } from "@/lib/datas";
 import { linkWhatsApp } from "@/lib/pedido";
 import { preencher, proximoStatus, ROTULO, STATUS, STATUS_MARCENEIRO, type Status } from "@/lib/status";
-import { agendarPedido, mudarStatus, sugerirDia } from "../actions";
+import { agendarPedido, avisoEnviado, mudarStatus, sugerirDia } from "../actions";
 
 interface Props {
   id: number;
@@ -92,10 +92,11 @@ export default function AcoesPedido(p: Props) {
         <>
           <h2>Mandar mensagem no WhatsApp</h2>
           <div className="p-botoes">
-            <a className="p-btn verde" target="_blank" rel="noopener" href={zap("confirmado")}>Confirmar data</a>
-            <a className="p-btn verde" target="_blank" rel="noopener" href={zap("pronto")}>Está pronto</a>
-            <a className="p-btn verde" target="_blank" rel="noopener" href={zap("saiu_entrega")}>Saindo para entrega</a>
-            <a className="p-btn verde" target="_blank" rel="noopener" href={zap("proposta")}>Propor data</a>
+            <a className="p-btn verde" target="_blank" rel="noopener" href={zap("confirmado")} onClick={() => avisoEnviado(p.id, "confirmado", undefined, undefined).then(() => router.refresh())}>Confirmar data</a>
+            <a className="p-btn verde" target="_blank" rel="noopener" href={zap("em_producao")} onClick={() => avisoEnviado(p.id, "em_producao").then(() => router.refresh())}>Em produção</a>
+            <a className="p-btn verde" target="_blank" rel="noopener" href={zap("pronto")} onClick={() => avisoEnviado(p.id, "pronto", undefined, undefined).then(() => router.refresh())}>Está pronto</a>
+            <a className="p-btn verde" target="_blank" rel="noopener" href={zap("saiu_entrega")} onClick={() => avisoEnviado(p.id, "saiu_entrega", undefined, undefined).then(() => router.refresh())}>Saindo para entrega</a>
+            <a className="p-btn verde" target="_blank" rel="noopener" href={zap("proposta")} onClick={() => avisoEnviado(p.id, "proposta", undefined, data || undefined).then(() => router.refresh())}>Propor data</a>
           </div>
         </>
       ) : (

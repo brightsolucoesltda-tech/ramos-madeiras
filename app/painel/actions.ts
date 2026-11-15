@@ -268,3 +268,36 @@ export async function apagarExemplos(): Promise<Resp> {
     return falha(e);
   }
 }
+
+/**
+ * Registra que o cliente foi avisado pelo WhatsApp (tipo = pronto, em_producao, saiu_entrega, confirmado, proposta).
+ * Se `novoStatus` vier, muda o status junto ("Marcar como pronto e avisar").
+ * Se `dataProposta` vier, guarda a data sugerida ao cliente.
+ */
+export async function avisoEnviado(id: number, tipo: string, novoStatus?: Status, dataProposta?: string): Promise<Resp> {
+  try {
+    const u = await exigirAcao();
+    if (novoStatus) {
+      if (!STATUS.includes(novoStatus)) throw new Error("Status inválido.");
+      if (u.papel === "marceneiro" && !STATUS_MARCENEIRO.includes(novoStatus)) throw new Error("Esse status é do vendedor.");
+    }
+    const db = admin();
+    const { data: p, error: e1 } = await db.from("pedidos").select("avisos").eq("id", id).single();
+    if (e1) throw e1;
+    const mudancas: Record<string, unknown> = {
+      avisos: { ...((p?.avisos as Record<string, string>) ?? {}), [tipo]: new Date().toISOString() },
+      atualizado_em: new Date().toISOString(),
+    };
+    if (novoStatus) mudancas.status = novoStatus;
+    if (dataProposta) {
+      mudancas.data_proposta = dataProposta;
+      mudancas.aceite = "proposto";
+    }
+    const { error } = await db.from("pedidos").update(mudancas).eq("id", id);
+    if (error) throw error;
+    atualizarTela();
+    return { ok: true };
+  } catch (e) {
+    return falha(e);
+  }
+}
