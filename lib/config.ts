@@ -8,8 +8,8 @@
 export const config = {
   nome: "Ramos Madeiras",
   // Número do WhatsApp com DDI+DDD, só dígitos. Pode ser trocado pela variável NEXT_PUBLIC_WHATSAPP.
-  whatsapp: process.env.NEXT_PUBLIC_WHATSAPP || "5541984036014",
-  whatsappExibicao: process.env.NEXT_PUBLIC_WHATSAPP_EXIBICAO || "(41) 98403-6014",
+  whatsapp: process.env.NEXT_PUBLIC_WHATSAPP || "5541992003650",
+  whatsappExibicao: process.env.NEXT_PUBLIC_WHATSAPP_EXIBICAO || "(41) 99200-3650",
   instagram: "https://www.instagram.com/ramos_madeiras/",
   cidadeBase: "Fazenda Rio Grande - PR",
   siteUrl: process.env.NEXT_PUBLIC_SITE_URL || "https://ramos-madeiras.vercel.app",
